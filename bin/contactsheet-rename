@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-simplify_fasta_headers.py -- short, informative sequence names from ENA/NCBI headers
+contactsheet-rename -- short, informative sequence names from ENA/NCBI headers
 
 Reads FASTA (plain or .gz, or '-' for stdin) and writes FASTA with renamed headers:
 
@@ -16,7 +16,7 @@ Headers whose ID is not an accession (pre-publication names such as SUPER_1,
 scaffold_12, Chr_3) are left as the first word. Unlocalised/unplaced sequences
 are never named as chromosomes.
 
-  simplify_fasta_headers.py asm.fa.gz --map names.tsv > asm.renamed.fa
+  contactsheet-rename asm.fa.gz --map names.tsv > asm.renamed.fa
 """
 import argparse
 import gzip

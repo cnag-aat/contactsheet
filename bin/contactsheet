@@ -1,41 +1,41 @@
 #!/bin/bash
 #
-# hic_contact_maps.sh -- Hi-C contact maps from an assembly + paired Hi-C reads
+# contactsheet -- Hi-C contact maps from an assembly + paired Hi-C reads
 #
 #   chromap (--preset hic, PCR-dup removal) -> .pairs.gz
 #     -> cooler cload/zoomify/balance     -> <prefix>.mcool  (5 kb base)
 #     -> PretextMap / PretextSnapshot     -> <prefix>.pretext + png
-#     -> plot_hic_maps.py                 -> labelled whole-genome + per-chromosome png/pdf
+#     -> contactsheet-plot                -> labelled whole-genome + per-chromosome png/pdf
 #
 # Usage
-#   hic_contact_maps.sh ASSEMBLY.fa[.gz] HIC_READ_DIR [OUTDIR]
+#   contactsheet ASSEMBLY.fa[.gz] HIC_READ_DIR [OUTDIR]
 #
-#   e.g. hic_contact_maps.sh ibLobDeci3.2.asm.fa.gz hic_reads/ hic_maps
+#   e.g. contactsheet ibLobDeci3.2.asm.fa.gz hic_reads/ hic_maps
 #
-#   On SLURM, submit it with the thin wrapper:  sbatch hic_contact_maps.sbatch ...
+#   On SLURM, submit it with the thin wrapper:  sbatch contactsheet.sbatch ...
 #   (any scheduler works: this script only needs the tools on PATH)
 #
 # Read pairs are found in HIC_READ_DIR by mate suffix:
 #   X.1.fastq.gz/X.2.fastq.gz  X_1.fq.gz/X_2.fq.gz  X_R1.fastq.gz  X_R1_001.fastq.gz ...
 #
-# Options (environment variables, e.g.  BINSIZE=10000 hic_contact_maps.sh ...
-#          or  sbatch --export=ALL,BINSIZE=10000 hic_contact_maps.sbatch ...)
+# Options (environment variables, e.g.  BINSIZE=10000 contactsheet ...
+#          or  sbatch --export=ALL,BINSIZE=10000 contactsheet.sbatch ...)
 #   BINSIZE     base (finest) resolution of the mcool, bp           [5000]
 #   MAPQ        min MAPQ for chromap pairs                          [1]
 #   RENAME      1 = simplify ENA/NCBI headers while decompressing   [1]
 #               (CHR_1_OZ212012.1, MT_OZ212029.1, scaffold_68_CBAAFG020000022.1;
-#                old->new table in <prefix>.names.tsv; see simplify_fasta_headers.py)
+#                old->new table in <prefix>.names.tsv; see contactsheet-rename)
 #   LABEL_MIN   size fallback: label seqs >= this many bp, used only if no
 #               sequence is named like a chromosome (CHR_/Chr_/chr_/SUPER_)  [1000000]
-#   PLOT_OPTS   extra options for plot_hic_maps.py                  [""]
+#   PLOT_OPTS   extra options for contactsheet-plot                 [""]
 #               e.g. PLOT_OPTS="--chroms-only --cmap fall --label-style combined"
 #   PRETEXT_SORT  PretextMap --sortby: nosort|length|name           [nosort]
 #   THREADS     threads                         [SLURM_CPUS_PER_TASK, else nproc]
 #   KEEP_TMP    1 = keep the uncompressed reference and chromap index  [0]
 #
 # Needs chromap, samtools, bgzip, pigz, cooler, PretextMap, PretextSnapshot,
-# plot_hic_maps.py and simplify_fasta_headers.py on PATH -- i.e. the conda env
-# set up by install_hic_contact_maps.sh, activated.
+# contactsheet-plot and contactsheet-rename on PATH -- i.e. the conda env
+# set up by install.sh, activated.
 
 set -euo pipefail
 
@@ -65,10 +65,10 @@ helper() {
     elif [[ -x $HERE/$1 ]]; then echo "$HERE/$1"
     else echo "ERROR: $1 not found on PATH or in $HERE" >&2; exit 1; fi
 }
-SIMPLIFY=$(helper simplify_fasta_headers.py)
-PLOTTER=$(helper plot_hic_maps.py)
+SIMPLIFY=$(helper contactsheet-rename)
+PLOTTER=$(helper contactsheet-plot)
 for t in chromap samtools bgzip pigz cooler PretextMap PretextSnapshot python3; do
-    command -v "$t" >/dev/null || { echo "ERROR: $t not found on PATH -- activate the hic_contact_maps conda env (see install_hic_contact_maps.sh)" >&2; exit 1; }
+    command -v "$t" >/dev/null || { echo "ERROR: $t not found on PATH -- activate the contactsheet conda env (see install.sh)" >&2; exit 1; }
 done
 
 log() { echo "[$(date '+%F %T')] $*"; }
@@ -172,7 +172,7 @@ PretextSnapshot -m "$PRETEXT" --sequences "=full" -r 4096 -f png -o plots/pretex
     || echo "[warn] PretextSnapshot failed (map is still usable in PretextView)" >&2
 
 # --- publication plots -------------------------------------------------------
-log "plot_hic_maps.py"
+log "contactsheet-plot"
 # shellcheck disable=SC2086
 python3 "$PLOTTER" "$MCOOL" -o plots --prefix "$PREFIX" --min-size "$LABEL_MIN" $PLOT_OPTS
 

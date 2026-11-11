@@ -1,0 +1,7 @@
+hic_maps/
+*.mcool
+*.cool
+*.pretext
+*.pairs.gz
+__pycache__/
+.DS_Store

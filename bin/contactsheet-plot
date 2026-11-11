@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-plot_hic_maps.py -- publication-quality Hi-C contact map images from an .mcool
+contactsheet-plot -- publication-quality Hi-C contact map images from an .mcool
 
 Produces
   * whole-genome maps at several zoom levels (the finest resolution in the
@@ -8,7 +8,7 @@ Produces
   * one map per chromosome (finest resolution under --chrom-max-bins bins)
 
 Chromosomes are recognised by name and get a label and boundary lines:
-  CHR_1_OZ212012.1 -> "1 (OZ212012.1)"   (as written by simplify_fasta_headers.py)
+  CHR_1_OZ212012.1 -> "1 (OZ212012.1)"   (as written by contactsheet-rename)
   SUPER_1, CHR_1, Chr_1, chr_1, chr1     -> "1"   (pre-publication names)
 Unlocalised/unplaced sequences (SUPER_12_unloc_1, scaffold_68_..., MT_...) are
 drawn but not labelled, or dropped entirely with --chroms-only. If no sequence
@@ -16,7 +16,7 @@ is named like a chromosome, a warning is printed and sequences >= --min-size
 bp are labelled instead (with their full names). No metadata is needed.
 
 Example
-  plot_hic_maps.py asm.mcool -o plots --formats png,pdf
+  contactsheet-plot asm.mcool -o plots --formats png,pdf
 """
 import argparse
 import math
