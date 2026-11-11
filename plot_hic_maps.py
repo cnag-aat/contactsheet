@@ -30,6 +30,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.ticker  # noqa: E402
 from matplotlib.colors import LinearSegmentedColormap, LogNorm  # noqa: E402
 
 
@@ -72,6 +73,8 @@ def parse_args():
     p.add_argument("--chrom-max-bins", type=int, default=2500,
                    help="per-chromosome maps: finest resolution with <= this many bins [2500]")
     p.add_argument("--no-chrom-plots", action="store_true", help="skip per-chromosome maps")
+    p.add_argument("--no-scale", action="store_true",
+                   help="no Mbp scale along the bottom of whole-genome maps")
     p.add_argument("--raw", action="store_true",
                    help="plot raw counts instead of balanced (ICE) values")
     p.add_argument("--cmap", default="juicebox",
@@ -316,7 +319,18 @@ def genome_maps(args, resolutions, formats, cmap, chrom_labels):
         for s in ax.spines.values():
             s.set_linewidth(0.6)
         title = args.title or args.prefix
-        fig.text(0.10, 0.005, f"{title}  —  {fmt_res(res)} bins", fontsize=8, va="bottom")
+        caption_pad = 4
+        if not args.no_scale:
+            # genome-coordinate scale along the bottom, in Mbp
+            sec = ax.secondary_xaxis("bottom", functions=(lambda x: x / 1e6, lambda x: x * 1e6))
+            sec.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(nbins=8, steps=[1, 2, 2.5, 5, 10]))
+            sec.tick_params(labelsize=7, length=3, width=0.5, pad=1.5)
+            sec.set_xlabel("Mbp", fontsize=8, labelpad=2)
+            sec.spines["bottom"].set_linewidth(0.6)
+            caption_pad = 30
+        ax.annotate(f"{title}  —  {fmt_res(res)} bins", xy=(0, 0), xycoords="axes fraction",
+                    xytext=(0, -caption_pad), textcoords="offset points",
+                    fontsize=8, va="top", ha="left", annotation_clip=False)
 
         save(fig, os.path.join(args.outdir, f"{args.prefix}.genome.{fmt_res(res)}"),
              formats, args.dpi)
