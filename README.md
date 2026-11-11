@@ -65,13 +65,15 @@ contactsheet ASSEMBLY.fa[.gz] HIC_READ_DIR [OUTDIR]
 Read pairs are found in `HIC_READ_DIR` by mate suffix: `X.1.fastq.gz`/`X.2.fastq.gz`,
 `X_1.fq.gz`, `X_R1.fastq.gz`, `X_R1_001.fastq.gz`, … All pairs are mapped together.
 
-On SLURM, use the wrapper. It only sets resources and activates the env, so
-copy it and adjust the `#SBATCH` lines for your cluster:
+On SLURM, activate the env and submit the wrapper. `sbatch` passes your `PATH`
+on to the job. The wrapper only sets resources, so copy it and adjust the
+`#SBATCH` lines for your cluster. `install.sh` also puts a copy in
+`$CONDA_PREFIX/share/contactsheet/`.
 
 ```bash
+conda activate contactsheet
 sbatch contactsheet.sbatch ASSEMBLY.fa.gz HIC_READ_DIR [OUTDIR]
-sbatch --export=ALL,CONDA_ENV=/shared/conda/contactsheet,PLOT_OPTS="--cmap fall" \
-       contactsheet.sbatch ASSEMBLY.fa.gz HIC_READ_DIR
+sbatch --export=ALL,PLOT_OPTS="--cmap fall" contactsheet.sbatch ASSEMBLY.fa.gz HIC_READ_DIR
 ```
 
 ### Pipeline options (environment variables)
